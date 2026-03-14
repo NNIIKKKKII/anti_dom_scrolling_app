@@ -1,180 +1,3 @@
-// import { useState, useEffect } from "react"
-// import { API } from "./api/clientApi.js"
-// import Card from "./components/Card.jsx"
-// function App() {
-
-//   const [result, setResult] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [filter, setFilter] = useState({
-//     type: "",
-//     participants: ""
-//   })
-
-
-//   const handleChange = (e) => {
-//     setFilter({
-//       ...filter,
-//       [e.target.name]: e.target.value
-//     }
-//     )
-//   }
-
-
-
-
-
-//   // const fetchRandomData = async () => {
-//   //   try {
-//   //     setLoading(true);
-//   //     const response = await API.get("/random");
-//   //     // console.log(response.data)
-//   //     // console.log(response.data.activity)
-//   //     setResult(response.data)
-//   //     setLoading(false);
-//   //   } catch (err) {
-//   //     console.log("Err from fetchRandomData", err)
-//   //   }
-//   // }
-
-//   // useEffect(() => {
-//   //   fetchRandomData();
-//   // }
-//   //   , [])
-
-//   // const handleRandom = async () => {
-//   //   await fetchRandomData();
-//   // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//   const fetchFilteredData = async (e) => {
-//     try {
-//       setLoading(true);
-//       const response = await API.get(`/filter?type=${filter.type}&participants=${filter.participants}`)
-//       // e.preventDefault();
-//       console.log(response)
-//       if (response.data.length === 0) {
-//         setResult("No activity found")
-//       } else {
-//         let random = Math.floor(Math.random() * response.data.length)
-//         setResult(response.data[random])
-//       }
-//       setLoading(false);
-//     } catch (err) {
-//       console.log("Err from fetchFilteredData", err)
-//       setLoading(false);
-
-//     }
-//   }
-
-//   // useEffect(() => {
-//   //   fetchFilteredData();
-//   // }, []
-//   // )
-
-
-
-//   const handleFilter = async (e) => {
-//     e.preventDefault();
-//     await fetchFilteredData()
-//   }
-
-
-
-//   if (loading) {
-//     return <p className=" text-3xl text-center">Loading...</p>
-//   }
-
-
-
-
-
-//   return (
-//     <div className="min-h-screen flex flex-col bg-[url('/images/juyt_6.jpg')] bg-cover bg-center border border-black">
-
-//       {/* Top Title */}
-//       <h1 className="text-6xl text-center mt-10">
-//         Bored ? Try this
-//       </h1>
-
-//       {/* Center Section */}
-//       <div className="flex flex-col items-center justify-center flex-1 gap-3">
-
-//         {/* Form Card */}
-//         <div className="border border-black px-3 py-5 rounded-lg flex flex-col items-center justify-center gap-4 bg-teal-100 w-full max-w-2xl">
-
-//           <form
-//             action="/filter"
-//             onSubmit={handleFilter}
-//             className="flex gap-4"
-//           >
-
-//             <select
-//               className="bg-orange-100 p-4 rounded-lg w-auto"
-//               onChange={handleChange}
-//               name="participants"
-//               value={filter.participants}
-//             >
-//               <option value="">Select no. of participants</option>
-//               <option value="1">1</option>
-//               <option value="2">2</option>
-//               <option value="3">3</option>
-//             </select>
-
-//             <select
-//               className="bg-orange-100 p-4 rounded-lg max-w-auto"
-//               onChange={handleChange}
-//               name="type"
-//               value={filter.type}
-//             >
-//               <option value="">Select type of activity/Random</option>
-//               <option value="relaxation">Relaxation</option>
-//               <option value="education">Education</option>
-//               <option value="charity">Charity</option>
-//               <option value="busywork">Busywork</option>
-//               <option value="recreational">Recreational</option>
-//               <option value="social">Social</option>
-//               <option value="cooking">Cooking</option>
-//             </select>
-
-//             <button
-//               className="p-3 bg-blue-300 rounded-lg hover:bg-blue-500"
-//               type="submit"
-//             >
-//               Submit
-//             </button>
-
-//           </form>
-//         </div>
-
-//         {/* Result Card */}
-//         <div className="p-3 flex flex-col gap-3 bg-red-100 rounded-lg w-60 text-center">
-//           {result === "" ? (
-//             <p>Select options to get activity</p>
-//           ) : (
-//             <p className="bg-white rounded-lg p-1 text-xl">
-//               {result.activity}
-//             </p>
-//           )}
-//         </div>
-
-//       </div>
-
-//     </div>
-//   )
-// }
-
-// export default App
 
 
 import { useState, useEffect } from "react"
@@ -188,6 +11,7 @@ function App() {
     type: "",
     participants: ""
   })
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFilter({
@@ -199,10 +23,15 @@ function App() {
   const fetchFilteredData = async () => {
     try {
       setLoading(true);
+      setError(""); // clear previous errors
       const response = await API.get(`/filter?type=${filter.type}&participants=${filter.participants}`)
       console.log(response)
       if (response.data.length === 0) {
         setResult("No activity found")
+      } else if(response.data === "Too many requests, please try again later."){
+        setError("too_many_requests");
+        setResult("");
+        return;
       } else {
         let random = Math.floor(Math.random() * response.data.length)
         setResult(response.data[random])
@@ -210,6 +39,7 @@ function App() {
       setLoading(false);
     } catch (err) {
       console.log("Err from fetchFilteredData", err)
+    } finally {
       setLoading(false);
     }
   }
@@ -261,10 +91,10 @@ function App() {
           <form
             action="/filter"
             onSubmit={handleFilter}
-            className="flex gap-3 items-center"
+            className="flex gap-3 items-center justify-center w-full"
           >
             <select
-              className="p-3 rounded-xl text-sm text-slate-600 outline-none cursor-pointer transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-purple-200"
+              className="p-3 rounded-xl text-sm text-slate-600 outline-none cursor-pointer transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-purple-200 w-full"
               style={{
                 background: "rgba(255, 245, 230, 0.85)",
                 border: "1px solid rgba(220, 190, 150, 0.4)",
@@ -276,26 +106,25 @@ function App() {
               name="participants"
               value={filter.participants}
             >
-              <option value="">No. of people</option>
+              <option value="">No. Of People</option>
               <option value="1">1 — Solo</option>
               <option value="2">2 — Duo</option>
               <option value="3">3 — Group</option>
             </select>
 
             <select
-              className="p-3 rounded-xl text-sm text-slate-600 outline-none cursor-pointer transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-purple-200"
+              className="p-3 rounded-xl text-sm text-slate-600 outline-none cursor-pointer transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-purple-200 w-full min-w-[210px]"
               style={{
                 background: "rgba(255, 245, 230, 0.85)",
                 border: "1px solid rgba(220, 190, 150, 0.4)",
                 fontFamily: "monospace",
                 letterSpacing: "0.03em",
-                minWidth: "210px",
               }}
               onChange={handleChange}
               name="type"
               value={filter.type}
             >
-              <option value="">Type of activity</option>
+              <option value="">Type Of Activity</option>
               <option value="relaxation">Relaxation</option>
               <option value="education">Education</option>
               <option value="charity">Charity</option>
@@ -306,9 +135,9 @@ function App() {
             </select>
 
             <button
-              className="px-6 py-3 rounded-xl text-sm font-medium tracking-wide text-white transition-all duration-200 hover:scale-105 active:scale-95"
+              className="px-6 py-3 rounded-xl text-sm font-medium tracking-wide text-white transition-all duration-200 hover:scale-105 active:scale-95 w-full max-w-[120px]"
               style={{
-                background: "linear-gradient(135deg, #a78bfa, #818cf8)",
+                background: "linear-gradient(135deg, #a78bfa, #d881f8ff)",
                 boxShadow: "0 4px 14px rgba(139, 92, 246, 0.35)",
                 fontFamily: "monospace",
                 letterSpacing: "0.08em",
@@ -320,6 +149,33 @@ function App() {
           </form>
         </div>
 
+{error === "too_many_requests" && (
+  <div
+    className="px-7 py-5 rounded-2xl w-72 text-center"
+    style={{
+      background: "rgba(255, 200, 180, 0.45)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      border: "1px dashed rgba(220, 100, 80, 0.5)",
+    }}
+  >
+    <p className="text-2xl mb-1">⏳</p>
+    <p
+      className="text-sm font-semibold text-red-500 tracking-widest uppercase"
+      style={{ fontFamily: "monospace" }}
+    >
+      Slow down
+    </p>
+    <p
+      className="text-xs text-slate-500 mt-1"
+      style={{ fontFamily: "monospace" }}
+    >
+      Too many requests. Wait a moment and try again.
+    </p>
+  </div>
+)}
+
+
         {/* Result Card */}
         <div
           className="px-7 py-5 rounded-2xl w-72 text-center transition-all duration-300"
@@ -330,7 +186,7 @@ function App() {
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: result
-              ? "1px solid rgba(255,255,255,0.7)"
+              ? "1px solid rgba(255,255,255,0.7) "
               : "1px dashed rgba(220, 160, 160, 0.5)",
             boxShadow: result
               ? "0 6px 24px rgba(160, 140, 200, 0.15)"
@@ -387,59 +243,9 @@ export default App
 //   }
 // }
 // Add error state at the top:
-// const [error, setError] = useState("");
-// And in your JSX, add this block between the form card and result card:
-// {error === "too_many_requests" && (
-//   <div
-//     className="px-7 py-5 rounded-2xl w-72 text-center"
-//     style={{
-//       background: "rgba(255, 200, 180, 0.45)",
-//       backdropFilter: "blur(10px)",
-//       WebkitBackdropFilter: "blur(10px)",
-//       border: "1px dashed rgba(220, 100, 80, 0.5)",
-//     }}
-//   >
-//     <p className="text-2xl mb-1">⏳</p>
-//     <p
-//       className="text-sm font-semibold text-red-500 tracking-widest uppercase"
-//       style={{ fontFamily: "monospace" }}
-//     >
-//       Slow down
-//     </p>
-//     <p
-//       className="text-xs text-slate-500 mt-1"
-//       style={{ fontFamily: "monospace" }}
-//     >
-//       Too many requests. Wait a moment and try again.
-//     </p>
-//   </div>
-// )}
 
-// {error === "generic" && (
-//   <div
-//     className="px-7 py-5 rounded-2xl w-72 text-center"
-//     style={{
-//       background: "rgba(200, 200, 255, 0.35)",
-//       backdropFilter: "blur(10px)",
-//       WebkitBackdropFilter: "blur(10px)",
-//       border: "1px dashed rgba(120, 120, 220, 0.5)",
-//     }}
-//   >
-//     <p className="text-2xl mb-1">⚠️</p>
-//     <p
-//       className="text-sm font-semibold text-slate-600 tracking-widest uppercase"
-//       style={{ fontFamily: "monospace" }}
-//     >
-//       Something went wrong
-//     </p>
-//     <p
-//       className="text-xs text-slate-400 mt-1"
-//       style={{ fontFamily: "monospace" }}
-//     >
-//       Couldn't fetch an activity. Try again.
-//     </p>
-//   </div>
-// )}
+// And in your JSX, add this block between the form card and result card:
+// 
 // Three things worth noting:
 // err.response?.status === 429 — this is axios's way of exposing the HTTP status. If you're using fetch instead of axios, it'd be err.status === 429 or you check response.ok before parsing.
 // finally block replaces the duplicate setLoading(false) calls you had in both try and catch — cleaner.
