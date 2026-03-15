@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const API = axios.create({
-    baseURL: "https://bored-api.appbrewery.com"
+    baseURL: import.meta.env.VITE_API_URL
 })

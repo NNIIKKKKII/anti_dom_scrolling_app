@@ -8,6 +8,8 @@ function App() {
     type: "",
     participants: ""
   })
+
+
   const [error, setError] = useState("")
 
   const handleChange = (e) => {
@@ -17,35 +19,55 @@ function App() {
     })
   }
 
+
+
+  // if (!filter.type || !filter.participants) {
+  //   setResult("Please select both options");
+  //   return;
+  // }
+
+
+
+
   const fetchFilteredData = async () => {
     try {
       setLoading(true)
       setError("")
 
       const response = await API.get(
-        `/filter?type=${filter.type}&participants=${filter.participants}`
+        `/filter`,
+        {
+          params: {
+            type: filter.type,
+            participants: filter.participants
+          }
+        }
       )
-
+      console.log(response)
       const data = response.data
 
-      if (typeof data === "string" && data.includes("Too many")) {
-        setError("too_many_requests")
-        setResult("")
-        return
+      if (!data || Object.keys(data).length === 0) {
+        setResult("No activity found");
+        return;
+      } else {
+        setResult(data)
       }
 
-      if (Array.isArray(data) && data.length === 0) {
-        setResult("No activity found")
-      } else if (Array.isArray(data)) {
-        const random = Math.floor(Math.random() * data.length)
-        setResult(data[random])
-      }
+
+
+
 
     } catch (err) {
-      console.log("Error fetching activity", err)
-      setError("generic")
+
+      if (err.response?.status === 429) {
+        setError("too_many_requests");
+        setResult("");
+      } else {
+        setError("generic");
+      }
+
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
